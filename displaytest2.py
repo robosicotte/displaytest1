@@ -30,6 +30,9 @@ DISPLAY_ADDR=0x3D #The display address
 # The first two parameters are the pixel width and pixel height.
 # Change these to the right size for your display!
 oled = adafruit_ssd1306.SSD1306_I2C(128, 64, i2c, addr=DISPLAY_ADDR)
+button=digitalio.DigitalInOut(board.D21)
+button.direction=digitalio.Direction.INPUT
+button.pull = digitalio.Pull.UP
 
 def poweroff(sig, frame):
     print('Powering off OLED.')
@@ -47,7 +50,9 @@ def main():
     # Load a font in 2 different sizes.
     font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 28)
     font2 = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 18)
-
+    print(f'Button value: {button.value}')
+    while button.value == 1:
+        pass
     # Draw the text
     for idx in range(10):
         image = Image.new("1", (oled.width, oled.height))

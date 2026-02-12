@@ -10,6 +10,11 @@ Enter the venv and then:
 ```
 pip install -r requirements.txt
 ```
+### Depends on dejavu fonts:
+To install
+```
+sudo apt install fonts-dejavu-core
+```
 ### Pinouts:
 
 Display must be connected to I2C on the Pi.
