@@ -24,10 +24,13 @@ import signal
 import time
 i2c = board.I2C()  
 
+DISPLAY_ADDR=0x3D #The display address
+
 # Create the SSD1306 OLED class.
 # The first two parameters are the pixel width and pixel height.
 # Change these to the right size for your display!
-oled = adafruit_ssd1306.SSD1306_I2C(128, 64, i2c, addr=0x3D)
+oled = adafruit_ssd1306.SSD1306_I2C(128, 64, i2c, addr=DISPLAY_ADDR)
+
 def poweroff(sig, frame):
     print('Powering off OLED.')
     oled.poweroff()
