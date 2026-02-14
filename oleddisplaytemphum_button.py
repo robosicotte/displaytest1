@@ -6,7 +6,7 @@ Uses an SSD1306 OLED to display current temperature and humidity, from a CSV fil
 
 """
 import board
-#import digitalio
+import digitalio
 from PIL import Image, ImageDraw, ImageFont
 
 import adafruit_ssd1306
@@ -14,7 +14,9 @@ from datetime import datetime
 import signal
 import time
 from argparse import ArgumentParser
+from pathlib import Path
 import pandas as pd
+from enum import Enum
 from temphumdata import temphumdata
 from boundingboxutils import *
 
@@ -26,9 +28,9 @@ DEFAULT_TIME_ON=5
 
 i2c = board.I2C()  
 
-"""button=digitalio.DigitalInOut(board.D21)
+button=digitalio.DigitalInOut(board.D21)
 button.direction=digitalio.Direction.INPUT
-button.pull = digitalio.Pull.UP"""
+button.pull = digitalio.Pull.UP
         
 
 def poweroff(sig, frame):
@@ -59,16 +61,11 @@ def parse_args():
     parser.add_argument('--centery', action='store_true', help='Center y.')
     parser.add_argument('--ypadding', type=int, default=DEFAULT_Y_PADDING, help=f'Y padding; default {DEFAULT_Y_PADDING}')
     parser.add_argument('--xpadding', type=int, default=DEFAULT_X_PADDING, help=f'X padding; default {DEFAULT_X_PADDING}; overwritten by centerx')
+    parser.add_argument('--continuous', '-c', action='store_true', help='Continuous mode')
     args=parser.parse_args()
     return args
 
-def main():
-    args=parse_args()
-    fontsize=args.fontsize
-    global display #Declare global display to turn off on signal.
-    display=adafruit_ssd1306.SSD1306_I2C(128, 64, i2c, addr=args.displayaddr)
-    font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf", fontsize)
-    currtemphum=read_curr_temp_hum(args.filename)
+def display_temp_hum(display, currtemphum, font, args):
     temp_f_str=f'{currtemphum.get_temp_f()} F'
     hum_str=f'{currtemphum.get_humidity()} %'
     temp_f_str_bbox=TextBoundingBox(font.getbbox(temp_f_str))
@@ -103,7 +100,29 @@ def main():
     temphumtextimg_draw.text(humxy, hum_str, font=font, fill=255)
     display.image(temphumtextimg)
     display.show()
-    time.sleep(args.timeon)
+
+def main():
+    args=parse_args()
+    fontsize=args.fontsize
+    global display #Declare global display to turn off on signal.
+    display=adafruit_ssd1306.SSD1306_I2C(128, 64, i2c, addr=args.displayaddr)
+    font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf", fontsize)
+    if args.continuous:
+        while True:
+            while button.value == 1:
+                pass
+            currtemphum=read_curr_temp_hum(args.filename)
+            display.poweron()
+            display_temp_hum(display, currtemphum, font, args)
+            time.sleep(args.timeon)
+            display.poweroff()
+    else:
+        while button.value == 1:
+            pass
+        currtemphum=read_curr_temp_hum(args.filename)
+        display.poweron()
+        display_temp_hum(display, currtemphum, font, args)
+        time.sleep(args.timeon)
     display.poweroff()
 
 if __name__ == '__main__':
