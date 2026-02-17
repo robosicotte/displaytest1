@@ -182,3 +182,6 @@ fonts/
 
 #Extra files
 .lgd-nfy0
+
+#Log files
+logfile.txt
